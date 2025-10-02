@@ -7,19 +7,45 @@ class SnowflakeConnection:
     def __init__(self):
         self.connection = None
         self.cursor = None
+        # Établir automatiquement la connexion
+        self.connect()
         
-    def load_private_key(self, path, passphrase=None):
-        with open(path, 'rb') as f:
-            key = serialization.load_pem_private_key(
-                f.read(), 
-                password=passphrase.encode() if passphrase else None,
-                backend=default_backend()
-            )
-        return key.private_bytes(
-            encoding=serialization.Encoding.DER,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
+    def load_private_key(self, path=None, passphrase=None):
+        # Priorité 1: Utiliser la clé directement depuis PRIVATE_KEY
+        private_key_content = os.getenv('PRIVATE_KEY')
+        if private_key_content:
+            try:
+                key = serialization.load_pem_private_key(
+                    private_key_content.encode(), 
+                    password=passphrase.encode() if passphrase else None,
+                    backend=default_backend()
+                )
+                return key.private_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
+            except Exception as e:
+                print(f"⚠️ Erreur avec PRIVATE_KEY: {e}")
+        
+        # Priorité 2: Utiliser le fichier de clé si le path existe
+        if path and os.path.exists(path):
+            try:
+                with open(path, 'rb') as f:
+                    key = serialization.load_pem_private_key(
+                        f.read(), 
+                        password=passphrase.encode() if passphrase else None,
+                        backend=default_backend()
+                    )
+                return key.private_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
+            except Exception as e:
+                print(f"⚠️ Erreur avec fichier de clé {path}: {e}")
+        
+        raise Exception("Aucune clé privée valide trouvée dans PRIVATE_KEY ou SNOWFLAKE_PRIVATE_KEY_PATH")
     
     def connect(self):
         private_key = self.load_private_key(
