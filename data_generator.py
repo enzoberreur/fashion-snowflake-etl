@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-🎯 Générateur de données moderne et élégant pour ETL
-Architecture basée sur ID ranges prédéfinis pour cohérence parfaite
-Compatible avec ingester_direct.py ET ingester_snowpipe.py
-"""
 import argparse
 import json
 from dataclasses import dataclass
@@ -13,7 +7,6 @@ from faker import Faker
 
 @dataclass
 class GenerationConfig:
-    """Configuration pour génération de données cohérente"""
     sales: int = 0
     products: int = 0
     customers: int = 0
@@ -26,24 +19,19 @@ class GenerationConfig:
     output_dir: Path = Path("data")
     
     def __post_init__(self):
-        # Auto-calcul des ratios business intelligents
+        # Auto-calcul des ratios 
         if self.suppliers == 0:
-            self.suppliers = max(3, self.products // 20)  # 20 products par supplier
+            self.suppliers = max(3, self.products // 20)  
         
         self.output_dir.mkdir(exist_ok=True)
 
 class DataGenerator:
-    """
-    🎯 Générateur de données moderne avec cohérence garantie
-    Architecture basée sur des ID ranges prédéfinis
-    Compatible avec TOUS les ingesters
-    """
-    
+ 
     def __init__(self, config: GenerationConfig):
         self.config = config
         self.fake = Faker()
         
-        # 🔑 ID RANGES - Clé de la cohérence parfaite
+        # 🔑 ID RANGES 
         self.ranges = {
             'supplier': (1, max(1, config.suppliers)),
             'customer': (1001, max(1001, 1001 + config.customers - 1)),
@@ -74,7 +62,6 @@ class DataGenerator:
     # =================== GÉNÉRATEURS COMPATIBLES ===================
     
     def generate_suppliers(self) -> Iterator[Dict]:
-        """Génère suppliers spécialisés fashion vintage - Compatible TOUS ingesters"""
         vintage_suppliers = [
             "Maisons de Couture Parisiennes", "Ateliers Vintage Milano", "London Vintage Collective",
             "New York Estate Sales", "Tokyo Vintage Market", "Collectors Européens", 
@@ -87,26 +74,24 @@ class DataGenerator:
             supplier_name = self.fake.random_element(vintage_suppliers)
             
             yield {
-                # ✅ Champs compatibles TOUS ingesters
                 'supplier_id': f"SUP{supplier_id:03d}",
                 'name': supplier_name,
                 'contact_person': self.fake.name(),
                 'email': f"contact@{supplier_name.lower().replace(' ', '').replace('.', '')}.com",
                 'phone': self.fake.phone_number(),
-                'address': json.dumps({  # ✅ Snowpipe format
+                'address': json.dumps({ 
                     'street': self.fake.street_address(),
                     'city': self.fake.random_element(vintage_locations),
                     'country': self.fake.random_element(["France", "Italy", "United Kingdom", "United States", "Japan", "Belgium"])
                 }),
                 'specialty': self.fake.random_element(vintage_specialties),
-                'lead_time_days': self.fake.random_int(7, 45),  # ✅ Snowpipe
-                'minimum_order': self.fake.random_int(200, 2000),  # ✅ Snowpipe
+                'lead_time_days': self.fake.random_int(7, 45),  
+                'minimum_order': self.fake.random_int(200, 2000),  
                 'payment_terms': self.fake.random_element(["Net 30", "Net 45", "Virement immédiat"]),
-                'quality_rating': round(self.fake.random.uniform(4.2, 5.0), 1),  # ✅ Snowpipe
-                'established_date': self.fake.date_between('-25y', '-3y').isoformat(),  # ✅ Snowpipe
-                'is_active': self.fake.boolean(95),  # ✅ Snowpipe
+                'quality_rating': round(self.fake.random.uniform(4.2, 5.0), 1),  
+                'established_date': self.fake.date_between('-25y', '-3y').isoformat(),  
+                'is_active': self.fake.boolean(95),  
                 
-                # 🎨 Champs fashion vintage spécifiques
                 'vintage_era_focus': self.fake.random_element(['1950s-60s', '1970s-80s', '1990s-2000s', 'Multi-époque']),
                 'authentication_service': self.fake.boolean(85),
                 'certifications': self.fake.random_element(['Authentifié Vestiaire', 'Certifié Maison', 'Expertise Indépendante'])
@@ -127,31 +112,28 @@ class DataGenerator:
         
         for i, product_id in enumerate(self.id_range_iterator('product')):
             supplier_id = supplier_cycle[i % len(supplier_cycle)]
-            
-            # Prix réalistes pour fashion vintage (plus élevés)
+        
             cost = round(self.fake.random.uniform(80, 800), 2)
             price = round(cost * self.fake.random.uniform(1.8, 4.5), 2)
             
             yield {
-                # ✅ Champs compatibles TOUS ingesters
                 'product_id': f'P{product_id}',
                 'name': f"{self.fake.random_element(vintage_brands)} {self.fake.random_element(vintage_categories)}",
                 'category': self.fake.random_element(vintage_categories),
-                'subcategory': self.fake.random_element(['Classic', 'Vintage', 'Modern', 'Premium']),  # ✅ Snowpipe
+                'subcategory': self.fake.random_element(['Classic', 'Vintage', 'Modern', 'Premium']),  
                 'brand': self.fake.random_element(vintage_brands),
                 'material': self.fake.random_element(vintage_materials),
                 'color': self.fake.random_element(vintage_colors),
-                'price': price,  # ✅ Snowpipe
-                'cost': cost,    # ✅ Snowpipe
-                'weight_kg': round(self.fake.random.uniform(0.2, 2.5), 2),  # ✅ Snowpipe
-                'dimensions_cm': f"{self.fake.random_int(15, 45)}x{self.fake.random_int(10, 35)}x{self.fake.random_int(5, 20)}",  # ✅ Snowpipe
+                'price': price,  
+                'cost': cost,    
+                'weight_kg': round(self.fake.random.uniform(0.2, 2.5), 2),  
+                'dimensions_cm': f"{self.fake.random_int(15, 45)}x{self.fake.random_int(10, 35)}x{self.fake.random_int(5, 20)}",  
                 'supplier_id': f"SUP{supplier_id:03d}",
-                'created_date': self.fake.date_between('-3y', '-1y').isoformat(),  # ✅ Snowpipe
-                'last_updated': self.fake.date_between('-1y', 'today').isoformat(),  # ✅ Snowpipe
-                'is_active': self.fake.boolean(90),  # ✅ Snowpipe
-                'sku': f"VINT-{product_id}-{self.fake.random_int(100, 999)}",  # ✅ Snowpipe
+                'created_date': self.fake.date_between('-3y', '-1y').isoformat(),  
+                'last_updated': self.fake.date_between('-1y', 'today').isoformat(),  
+                'is_active': self.fake.boolean(90),  
+                'sku': f"VINT-{product_id}-{self.fake.random_int(100, 999)}",  
                 
-                # 🎨 Champs fashion vintage spécifiques
                 'size': self.fake.random_element(vintage_sizes),
                 'vintage_era': self.fake.random_element(vintage_eras),
                 'condition': self.fake.random_element(vintage_conditions),
@@ -170,29 +152,27 @@ class DataGenerator:
             registration_date = self.fake.date_between('-3y', 'today')
             
             yield {
-                # ✅ Champs compatibles TOUS ingesters
                 'customer_id': f'C{customer_id}',
                 'first_name': self.fake.first_name(),
                 'last_name': self.fake.last_name(),
                 'email': self.fake.email(),
                 'phone': self.fake.phone_number(),
                 'date_of_birth': self.fake.date_of_birth(minimum_age=22, maximum_age=65).isoformat(),
-                'gender': self.fake.random_element(['M', 'F', 'Other']),  # ✅ Snowpipe
-                'address': json.dumps({  # ✅ Snowpipe (format string)
+                'gender': self.fake.random_element(['M', 'F', 'Other']),  
+                'address': json.dumps({   (format string)
                     'street': self.fake.street_address(),
                     'city': self.fake.random_element(['Paris', 'Milan', 'London', 'New York', 'Los Angeles', 'Tokyo']),
                     'postal_code': self.fake.postcode(),
                     'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan'])
                 }),
-                'segment': self.fake.random_element(['VIP', 'Premium', 'Standard', 'New']),  # ✅ Snowpipe
-                'registration_date': registration_date.isoformat(),  # ✅ Snowpipe
-                'last_purchase_date': self.fake.date_between('-1y', 'today').isoformat(),  # ✅ Snowpipe
-                'total_orders': self.fake.random_int(1, 50),  # ✅ Snowpipe
-                'lifetime_value': round(self.fake.random.uniform(500, 50000), 2),  # ✅ Snowpipe
-                'preferred_channel': self.fake.random_element(['Online VIP', 'Showroom privé', 'Événements exclusifs']),  # ✅ Snowpipe
-                'marketing_consent': self.fake.boolean(80),  # ✅ Snowpipe
+                'segment': self.fake.random_element(['VIP', 'Premium', 'Standard', 'New']),  
+                'registration_date': registration_date.isoformat(),  
+                'last_purchase_date': self.fake.date_between('-1y', 'today').isoformat(),  
+                'total_orders': self.fake.random_int(1, 50),  
+                'lifetime_value': round(self.fake.random.uniform(500, 50000), 2),  
+                'preferred_channel': self.fake.random_element(['Online VIP', 'Showroom privé', 'Événements exclusifs']),  
+                'marketing_consent': self.fake.boolean(80),  
                 
-                # 🎨 Champs fashion vintage spécifiques
                 'customer_type': self.fake.random_element(customer_types),
                 'vintage_interests': self.fake.random_element(vintage_interests),
                 'preferred_era': self.fake.random_element(preferred_eras),
@@ -209,29 +189,27 @@ class DataGenerator:
         
         for store_id in self.id_range_iterator('store'):
             location = self.fake.random_element(locations)
-            manager_name = self.fake.name()  # ✅ Snowpipe
+            manager_name = self.fake.name()  
             
             yield {
-                # ✅ Champs compatibles TOUS ingesters
                 'store_id': f'ST{store_id}',
-                'store_name': f"Vintage Couture {location.split(',')[1].strip()}",  # ✅ Snowpipe
-                'manager_name': manager_name,  # ✅ Snowpipe
-                'address': json.dumps({  # ✅ Snowpipe (format string)
+                'store_name': f"Vintage Couture {location.split(',')[1].strip()}",  
+                'manager_name': manager_name,  
+                'address': json.dumps({   (format string)
                     'street': self.fake.street_address(),
                     'district': location.split(',')[0],
                     'city': location.split(',')[1].strip(),
                     'postal_code': self.fake.postcode(),
                     'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan'])
                 }),
-                'city': location.split(',')[1].strip(),  # ✅ Snowpipe
-                'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan']),  # ✅ Snowpipe
-                'phone': self.fake.phone_number(),  # ✅ Snowpipe
-                'email': f"manager.{location.split(',')[1].strip().lower().replace(' ', '')}@vintagecouture.com",  # ✅ Snowpipe
-                'opening_date': self.fake.date_between('-15y', '-1y').isoformat(),  # ✅ Snowpipe
-                'store_size_sqm': self.fake.random_int(80, 300),  # ✅ Snowpipe
-                'is_active': self.fake.boolean(98),  # ✅ Snowpipe
+                'city': location.split(',')[1].strip(),  
+                'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan']),  
+                'phone': self.fake.phone_number(),  
+                'email': f"manager.{location.split(',')[1].strip().lower().replace(' ', '')}@vintagecouture.com",  
+                'opening_date': self.fake.date_between('-15y', '-1y').isoformat(),  
+                'store_size_sqm': self.fake.random_int(80, 300),  
+                'is_active': self.fake.boolean(98),  
                 
-                # 🎨 Champs fashion vintage spécifiques
                 'type': self.fake.random_element(store_types),
                 'location': location,
                 'specialization': self.fake.random_element(['Haute Couture', 'Designer Vintage', 'Accessoires de Luxe']),
@@ -251,10 +229,9 @@ class DataGenerator:
         for sale_id in self.id_range_iterator('sale'):
             sale_date = self.fake.date_between('-2y', 'today')
             quantity = self.fake.random_int(1, 3)
-            unit_price = round(self.fake.random.uniform(200, 2500), 2)  # Prix fashion vintage
+            unit_price = round(self.fake.random.uniform(200, 2500), 2)  
             discount_percent = self.fake.random.uniform(0, 15)
             
-            # Calculs cohérents
             subtotal = round(quantity * unit_price, 2)
             discount_amount = round(subtotal * discount_percent / 100, 2)
             total_amount = round(subtotal - discount_amount, 2)
@@ -265,11 +242,10 @@ class DataGenerator:
             product_name = f"{self.fake.random_element(vintage_brands)} {self.fake.random_element(vintage_categories)} Vintage"
             
             yield {
-                # ✅ Champs compatibles ingester_direct
                 'sale_id': f'S{sale_id}',
                 'customer_id': f'C{self.random_id_from_range("customer")}',
                 'product_id': f'P{product_id_val}',
-                'product_name': product_name,  # ✅ Compatibilité ingester_direct
+                'product_name': product_name,  
                 'store_id': f'ST{self.random_id_from_range("store")}',
                 'quantity': quantity,
                 'unit_price': unit_price,
@@ -281,7 +257,7 @@ class DataGenerator:
                 'sale_date': sale_date.isoformat(),
                 'channel': self.fake.random_element(channels),
                 'payment_method': self.fake.random_element(payment_methods),
-                'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan']),  # ✅ Compatibilité ingester_direct
+                'country': self.fake.random_element(['France', 'Italy', 'United Kingdom', 'United States', 'Japan']), 
                 'sales_consultant': self.fake.name(),
                 'authentication_verified': self.fake.boolean(95),
                 'gift_wrapping': self.fake.boolean(40),
@@ -289,20 +265,16 @@ class DataGenerator:
             }
 
     def generate_returns(self) -> Iterator[Dict]:
-        """Génère des retours basés sur les ventes existantes - Compatible ingester_direct"""
-        # Utilise les ranges réelles des données déjà générées
-        real_sale_range = (100001, 200000)    # Range réelle des 100k sales
-        real_product_range = (2001, 6000)     # Range estimée des produits existants
-        real_customer_range = (1001, 11000)   # Range estimée des clients existants
+        real_sale_range = (100001, 200000)    
+        real_product_range = (2001, 6000)     
+        real_customer_range = (1001, 11000)   
         
         for return_id in self.id_range_iterator('return'):
-            # Référence une vente existante
             sale_id = f"S{self.fake.random_int(real_sale_range[0], real_sale_range[1])}"
             product_id = f"P{self.fake.random_int(real_product_range[0], real_product_range[1])}"
-            customer_id = f"C{self.fake.random_int(real_customer_range[0], real_customer_range[1])}"  # Customer de la sale
+            customer_id = f"C{self.fake.random_int(real_customer_range[0], real_customer_range[1])}"  
             
             yield {
-                # ✅ Schema compatible ingester_direct
                 "return_id": f"R{return_id}",
                 "sale_id": sale_id,
                 "customer_id": customer_id,
@@ -338,15 +310,13 @@ class DataGenerator:
             "Superbe qualité", "Authentique", "Collection parfaite", "Top qualité"
         ]
         
-        # Utilise les ranges réelles des données déjà générées
-        real_product_range = (2001, 6000)    # Range estimée des produits existants
-        real_customer_range = (1001, 11000)  # Range estimée des clients existants
+        real_product_range = (2001, 6000)    
+        real_customer_range = (1001, 11000)  
         
         for review_id in self.id_range_iterator('review'):
-            rating = self.fake.random_int(3, 5)  # Mode optimiste pour fashion vintage
+            rating = self.fake.random_int(3, 5)  
             
             yield {
-                # ✅ Schema compatible ingester_direct
                 "review_id": f"REV{review_id}",
                 "product_id": f"P{self.fake.random_int(real_product_range[0], real_product_range[1])}",
                 "customer_id": f"C{self.fake.random_int(real_customer_range[0], real_customer_range[1])}",
@@ -354,16 +324,15 @@ class DataGenerator:
                 "title": self.fake.random_element(review_titles),
                 "comment": self.fake.random_element(review_comments),
                 "review_date": self.fake.date_between(start_date='-6m', end_date='today').isoformat(),
-                "verified_purchase": self.fake.random_element([True, True, True, False]),  # 75% vérifiés
+                "verified_purchase": self.fake.random_element([True, True, True, False]),  
                 "helpful_votes": self.fake.random_int(0, 15),
-                "status": "Published"  # Par défaut publié
+                "status": "Published"  
             }
     
     def generate_inventory(self) -> Iterator[Dict]:
         """Génère des données d'inventaire pour les produits - Compatible ingester_direct"""
-        # Utilise les ranges réelles des données déjà générées
-        real_product_range = (2001, 6000)  # Range estimée des produits existants
-        real_store_range = (3001, 3020)    # Range estimée des stores existants
+        real_product_range = (2001, 6000)  
+        real_store_range = (3001, 3020)    
         
         for inventory_id in self.id_range_iterator('inventory'):
             current_stock = self.fake.random_int(0, 100)
@@ -372,7 +341,6 @@ class DataGenerator:
             max_stock_level = current_stock + self.fake.random_int(20, 80)
             
             yield {
-                # ✅ Schema compatible ingester_direct
                 "inventory_id": f"INV{inventory_id}",
                 "product_id": f"P{self.fake.random_int(real_product_range[0], real_product_range[1])}",
                 "store_id": f"ST{self.fake.random_int(real_store_range[0], real_store_range[1])}",
@@ -411,7 +379,7 @@ class DataGenerator:
             end_date = self.fake.date_between(start_date=start_date, end_date='+3m')
             
             yield {
-                # ✅ Schema compatible ingester_snowpipe
+                
                 "promotion_id": f"PROMO{promotion_id}",
                 "name": self.fake.random_element(promotion_names),
                 "description": self.fake.random_element(promotion_descriptions),
@@ -420,11 +388,10 @@ class DataGenerator:
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
                 "minimum_purchase": self.fake.random_int(100, 500),
-                "is_active": self.fake.boolean(70),  # 70% des promos actives
+                "is_active": self.fake.boolean(70),  
                 "created_date": self.fake.date_between(start_date='-1y', end_date='today').isoformat()
             }
 
-    # =================== MOTEUR DE GÉNÉRATION ===================
     
     def generate_entity(self, entity_name: str) -> None:
         """Génère et sauvegarde une entité complète"""
@@ -465,7 +432,6 @@ class DataGenerator:
         processed = {}
         for key, value in record.items():
             if isinstance(value, dict):
-                # Convertir les dicts en JSON string pour compatibilité Snowflake
                 processed[key] = json.dumps(value) if key in ['address'] else value
             else:
                 processed[key] = value
@@ -475,7 +441,6 @@ class DataGenerator:
         """Génère tous les datasets dans l'ordre optimal"""
         print("🚀 Démarrage génération dataset cohérent...")
         
-        # Ordre optimal : référentiels d'abord, transactionnel après
         entities = ['suppliers', 'products', 'customers', 'stores', 'promotions', 'sales', 'returns', 'reviews', 'inventory']
         
         for entity in entities:
@@ -513,7 +478,6 @@ def main():
         inventory=args.inventory
     )
     
-    # Génération
     generator = DataGenerator(config)
     generator.generate_all()
 

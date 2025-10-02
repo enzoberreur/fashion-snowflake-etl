@@ -15,13 +15,8 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
-# Debug: vérifier les variables d'environnement
-print(f"DEBUG - SNOWFLAKE_ACCOUNT: {os.getenv('SNOWFLAKE_ACCOUNT')}")
-print(f"DEBUG - SNOWFLAKE_USER: {os.getenv('SNOWFLAKE_USER')}")
-print(f"DEBUG - PRIVATE_KEY présente: {'OUI' if os.getenv('PRIVATE_KEY') else 'NON'}")
 
 def connect_snow():
-    """Connexion Snowflake avec authentification par clé privée"""
     private_key_path = os.getenv('SNOWFLAKE_PRIVATE_KEY_PATH')
     
     with open(private_key_path, 'rb') as f:
@@ -52,7 +47,6 @@ def setup_snowflake_objects(snow):
     cursor = snow.cursor()
     
     try:
-        # Création de la table products si elle n'existe pas
         create_products_table = """
         CREATE TABLE IF NOT EXISTS PRODUCTS_DATA_SNOWPIPE (
             PRODUCT_ID VARCHAR(20) NOT NULL,
@@ -78,7 +72,6 @@ def setup_snowflake_objects(snow):
         cursor.execute(create_products_table)
         print("✅ PRODUCTS_DATA_SNOWPIPE table created/verified")
         
-        # Création de la table customers si elle n'existe pas
         create_customers_table = """
         CREATE TABLE IF NOT EXISTS CUSTOMERS_DATA_SNOWPIPE (
             CUSTOMER_ID VARCHAR(20) NOT NULL,
@@ -103,7 +96,6 @@ def setup_snowflake_objects(snow):
         cursor.execute(create_customers_table)
         print("✅ CUSTOMERS_DATA_SNOWPIPE table created/verified")
         
-        # Création de la table suppliers si elle n'existe pas
         create_suppliers_table = """
         CREATE TABLE IF NOT EXISTS SUPPLIERS_DATA_SNOWPIPE (
             SUPPLIER_ID VARCHAR(20) NOT NULL,
@@ -126,7 +118,6 @@ def setup_snowflake_objects(snow):
         cursor.execute(create_suppliers_table)
         print("✅ SUPPLIERS_DATA_SNOWPIPE table created/verified")
         
-        # Création de la table stores si elle n'existe pas
         create_stores_table = """
         CREATE TABLE IF NOT EXISTS STORES_DATA_SNOWPIPE (
             STORE_ID VARCHAR(20) NOT NULL,
@@ -147,7 +138,6 @@ def setup_snowflake_objects(snow):
         cursor.execute(create_stores_table)
         print("✅ STORES_DATA_SNOWPIPE table created/verified")
         
-        # Création de la table promotions si elle n'existe pas
         create_promotions_table = """
         CREATE TABLE IF NOT EXISTS PROMOTIONS_DATA_SNOWPIPE (
             PROMOTION_ID VARCHAR(20) NOT NULL,
@@ -167,7 +157,6 @@ def setup_snowflake_objects(snow):
         cursor.execute(create_promotions_table)
         print("✅ PROMOTIONS_DATA_SNOWPIPE table created/verified")
         
-        # ℹ️ Note: Utilisation de la méthode SQL COPY alternative (plus simple et efficace)
         print("ℹ️ Utilisation de la méthode SQL COPY pour l'ingestion (Snowpipe alternatif)")
         
     except Exception as e:
@@ -204,7 +193,7 @@ def save_to_snowflake_via_sql(snow, batch, temp_dir, table_name):
         cursor.execute(put_command)
         logging.info(f"File uploaded to stage {stage_name}")
         
-        # COPY via SQL (équivalent à Snowpipe)
+        # COPY via SQL 
         copy_command = f"""
         COPY INTO {table_name}
         FROM @{stage_name}/{file_name}
