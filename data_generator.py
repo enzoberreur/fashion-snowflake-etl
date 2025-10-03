@@ -159,7 +159,7 @@ class DataGenerator:
                 'phone': self.fake.phone_number(),
                 'date_of_birth': self.fake.date_of_birth(minimum_age=22, maximum_age=65).isoformat(),
                 'gender': self.fake.random_element(['M', 'F', 'Other']),  
-                'address': json.dumps({   (format string)
+                'address': json.dumps({  # format string
                     'street': self.fake.street_address(),
                     'city': self.fake.random_element(['Paris', 'Milan', 'London', 'New York', 'Los Angeles', 'Tokyo']),
                     'postal_code': self.fake.postcode(),
@@ -195,7 +195,7 @@ class DataGenerator:
                 'store_id': f'ST{store_id}',
                 'store_name': f"Vintage Couture {location.split(',')[1].strip()}",  
                 'manager_name': manager_name,  
-                'address': json.dumps({   (format string)
+                'address': json.dumps({  # format string
                     'street': self.fake.street_address(),
                     'district': location.split(',')[0],
                     'city': location.split(',')[1].strip(),
