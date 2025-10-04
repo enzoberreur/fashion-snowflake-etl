@@ -1,58 +1,73 @@
-# 👑 Monogram Paris - ETL Pipeline
+👑 Monogram Paris - ETL Pipeline
 
-**Fashion Vintage Luxury** - Système ETL pour authentification et vente de pièces de collection (Chanel, Dior, Hermès, YSL)
+Fashion Vintage Luxury – ETL pipeline for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
 
-## 👥 Équipe
-- **Enzo Berreur**
-- **Sara BenAdbelkader** 
-- **Antonin Arroyo**
-- **Nehemie Bikuka Prince**
+👥 Team
 
-## 🏛️ Architecture
+Enzo Berreur – Data Engineer
 
-### **💎 Ingester Direct** - Transactions temps réel
-- **Données** : Sales, Returns, Reviews, Inventory
-- **Usage** : `python3 ingester_direct.py --all-transactional`
+Sara Ben Abdelkader – Data Analyst / ETL
 
-### **🏰 Ingester Snowpipe** - Données de référence  
-- **Données** : Products, Customers, Suppliers, Stores, Promotions
-- **Usage** : `python3 ingester_snowpipe.py --all-reference`
+Antonin Arroyo – Back-end Developer
 
-## 🚀 Utilisation
+Nehemie Bikuka Prince – Data Engineer
 
-### **Génération + Ingestion Complète**
-```bash
-# 1. Générer 145k enregistrements 
-python3 data_generator.py --sales 100000 --products 5000 --customers 10000 --stores 20 --promotions 100 --returns 5000 --reviews 15000 --inventory 10000
+🏛️ Architecture
+💎 Ingester Direct – Real-time Transactions
 
-# 2. Ingester transactions 
+Data processed: Sales, Returns, Reviews, Inventory
+
+Purpose: Immediate ingestion of transactions for near real-time tracking
+
+Execution command:
+
+python3 ingester_direct.py --all-transactional
+
+🏰 Ingester Snowpipe – Reference Data
+
+Data processed: Products, Customers, Suppliers, Stores, Promotions
+
+Purpose: Batch ingestion for updating reference data
+
+Execution command:
+
+python3 ingester_snowpipe.py --all-reference
+
+🚀 Full Usage
+1️⃣ Generate data
+python3 data_generator.py \
+--sales 100000 \
+--products 5000 \
+--customers 10000 \
+--stores 20 \
+--promotions 100 \
+--returns 5000 \
+--reviews 15000 \
+--inventory 10000
+
+2️⃣ Ingest transactions
 python3 ingester_direct.py --all-transactional --batch-size 10000
 
-# 3. Ingester référence 
+3️⃣ Ingest reference data
 python3 ingester_snowpipe.py --all-reference --batch-size 2000
 
-# 4. Vérifier les données
+4️⃣ Verify data
 python3 snowflake_check_data.py
-```
 
-## 📁 Structure
+📁 Project Structure
+File	Description
+data_generator.py	Generates consistent data for sales, customers, products, and inventory
+ingester_direct.py	Real-time ingestion of transactional data via SQL INSERT
+ingester_snowpipe.py	Batch ingestion of reference data using Parquet + COPY
+snowflake_check_data.py	Scripts for data validation and quality checks
+snowflake_config.py	Snowflake configuration and connection settings
+⚙️ Configuration
 
-| Fichier | Rôle |
-|---------|------|
-| `data_generator.py` | Génère données fashion vintage cohérentes |
-| `ingester_direct.py` | Ingestion temps réel (SQL INSERT) |
-| `ingester_snowpipe.py` | Ingestion batch (Parquet + COPY) |
-| `snowflake_check_data.py` | Validation des données |
-| `snowflake_config.py` | Configuration Snowflake |
+Create a .env file with your Snowflake credentials:
 
-## ⚙️ Configuration
-
-**Fichier `.env` requis :**
-```env
 SNOWFLAKE_ACCOUNT=your_account
 SNOWFLAKE_USER=your_user
 SNOWFLAKE_WAREHOUSE=INGEST
 SNOWFLAKE_DATABASE=INGEST
 SNOWFLAKE_SCHEMA=INGEST
 SNOWFLAKE_PRIVATE_KEY_PATH=/path/to/private_key.pem
-```
