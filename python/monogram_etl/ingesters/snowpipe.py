@@ -1,4 +1,4 @@
-import os, sys, logging
+import os
 import json
 import uuid
 import argparse
@@ -9,37 +9,38 @@ import pyarrow.parquet as pq
 import tempfile
 
 from dotenv import load_dotenv
-from cryptography.hazmat.primitives import serialization
+
+from monogram_etl.config.snowflake import SnowflakeConnection
+from monogram_etl.utils.logging import get_logger
 
 load_dotenv()
-
-logging.basicConfig(level=logging.INFO)
+logger = get_logger(__name__)
 
 
 def connect_snow():
-    private_key_path = os.getenv('SNOWFLAKE_PRIVATE_KEY_PATH')
-    
-    with open(private_key_path, 'rb') as f:
-        private_key = serialization.load_pem_private_key(
-            f.read(),
-            password=None
-        )
-    
-    pkb = private_key.private_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
+    """Return a raw snowflake.connector.connect connection used by the legacy
+    Parquet + COPY helpers below.
+
+    Key loading now goes through ``SnowflakeConnection.load_private_key`` so
+    the snowpipe ingester, the direct ingester, dbt, and the diagnostics
+    module all share one authentication code path. The connection itself
+    keeps an explicit ``QUERY_TAG`` so its statements are easy to filter in
+    ``SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY``.
+    """
+    private_key = SnowflakeConnection.load_private_key(
+        os.getenv("SNOWFLAKE_PRIVATE_KEY_PATH"),
+        os.getenv("SNOWFLAKE_PRIVATE_KEY_PASSPHRASE"),
     )
 
     return snowflake.connector.connect(
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
         user=os.getenv("SNOWFLAKE_USER"),
-        private_key=pkb,
-        role="INGEST",
-        database="INGEST",
-        schema="INGEST", 
-        warehouse="INGEST",
-        session_parameters={'QUERY_TAG': 'py-snowpipe-sql-method'}, 
+        private_key=private_key,
+        role=os.getenv("SNOWFLAKE_ROLE", "INGEST"),
+        database=os.getenv("SNOWFLAKE_DATABASE", "INGEST"),
+        schema=os.getenv("SNOWFLAKE_SCHEMA", "INGEST"),
+        warehouse=os.getenv("SNOWFLAKE_WAREHOUSE", "INGEST"),
+        session_parameters={"QUERY_TAG": "monogram-snowpipe"},
     )
 
 def setup_snowflake_objects(snow):
