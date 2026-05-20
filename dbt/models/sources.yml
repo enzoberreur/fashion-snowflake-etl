@@ -1,0 +1,115 @@
+version: 2
+
+sources:
+  - name: monogram_raw
+    description: "Raw layer populated by the Python ingesters (direct + snowpipe)."
+    database: INGEST
+    schema: INGEST
+    loaded_at_field: CREATED_AT
+    freshness:
+      warn_after: { count: 6,  period: hour }
+      error_after: { count: 24, period: hour }
+
+    tables:
+      # Direct ingester — transactional (loaded by ingesters/direct.py)
+      - name: SALES_DATA
+        description: "Sales transactions, loaded near real-time by the direct ingester."
+        columns:
+          - name: SALE_ID
+            description: "Primary key."
+            tests:
+              - not_null
+              - unique
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+          - name: PRODUCT_ID
+            tests:
+              - not_null
+          - name: TOTAL_AMOUNT
+            tests:
+              - not_null
+
+      - name: RETURNS_DATA
+        description: "Returned items, refunds, and reasons."
+        columns:
+          - name: RETURN_ID
+            tests:
+              - not_null
+              - unique
+          - name: SALE_ID
+            description: "FK to SALES_DATA.SALE_ID."
+            tests:
+              - not_null
+
+      - name: REVIEWS_DATA
+        description: "Customer reviews of products."
+        loaded_at_field: CREATED_AT
+        columns:
+          - name: REVIEW_ID
+            tests:
+              - not_null
+              - unique
+
+      - name: INVENTORY_DATA
+        description: "Stock snapshots per store/product."
+        columns:
+          - name: INVENTORY_ID
+            tests:
+              - not_null
+              - unique
+
+      # Snowpipe ingester — reference / master data (loaded by ingesters/snowpipe.py)
+      - name: PRODUCTS_DATA_SNOWPIPE
+        description: "Master product catalog (vintage luxury items)."
+        loaded_at_field: LAST_UPDATED
+        freshness:
+          warn_after: { count: 7,  period: day }
+          error_after: { count: 30, period: day }
+        columns:
+          - name: PRODUCT_ID
+            tests:
+              - not_null
+              - unique
+
+      - name: CUSTOMERS_DATA_SNOWPIPE
+        description: "Customer master."
+        loaded_at_field: REGISTRATION_DATE
+        freshness:
+          warn_after: { count: 7,  period: day }
+          error_after: { count: 30, period: day }
+        columns:
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+              - unique
+
+      - name: STORES_DATA_SNOWPIPE
+        description: "Physical and online store master."
+        loaded_at_field: OPENING_DATE
+        freshness:
+          warn_after: { count: 30, period: day }
+          error_after: { count: 365, period: day }
+        columns:
+          - name: STORE_ID
+            tests:
+              - not_null
+              - unique
+
+      - name: SUPPLIERS_DATA_SNOWPIPE
+        description: "Authentication and sourcing partners."
+        loaded_at_field: ESTABLISHED_DATE
+        columns:
+          - name: SUPPLIER_ID
+            tests:
+              - not_null
+              - unique
+
+      - name: PROMOTIONS_DATA_SNOWPIPE
+        description: "Discount campaigns and BOGO offers."
+        loaded_at_field: CREATED_DATE
+        columns:
+          - name: PROMOTION_ID
+            tests:
+              - not_null
+              - unique

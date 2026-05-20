@@ -1,0 +1,33 @@
+# Copy this file to ~/.dbt/profiles.yml OR set DBT_PROFILES_DIR=./dbt and rename to profiles.yml.
+# .gitignore already excludes profiles.yml — keep credentials out of git.
+
+monogram_paris:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:    "{{ env_var('SNOWFLAKE_USER') }}"
+      role:    "{{ env_var('SNOWFLAKE_ROLE', 'INGEST') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'INGEST') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'INGEST') }}"
+      schema: INGEST
+      # Key-pair auth — matches the Python ingesters
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE', '') }}"
+      threads: 4
+      client_session_keep_alive: false
+      query_tag: monogram-dbt-dev
+
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:    "{{ env_var('SNOWFLAKE_USER') }}"
+      role:    "{{ env_var('SNOWFLAKE_ROLE', 'INGEST') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'INGEST') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'INGEST') }}"
+      schema: INGEST
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE', '') }}"
+      threads: 8
+      query_tag: monogram-dbt-prod

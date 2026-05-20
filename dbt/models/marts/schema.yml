@@ -1,0 +1,129 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: "Conformed customer dimension. One row per CRM customer with sales-derived behavioural attributes."
+    columns:
+      - name: customer_sk
+        description: "Surrogate key (MD5 of customer_id)."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+      - name: value_tier
+        tests:
+          - accepted_values:
+              values: ['VIP', 'High Value', 'Regular', 'Occasional', 'Inactive']
+
+  - name: dim_product
+    description: "Conformed product dimension enriched with supplier attributes."
+    columns:
+      - name: product_sk
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+      - name: gross_margin
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              config:
+                severity: warn
+
+  - name: dim_store
+    columns:
+      - name: store_sk
+        tests:
+          - not_null
+          - unique
+      - name: region
+        tests:
+          - accepted_values:
+              values: ['Europe', 'Americas', 'Asia-Pacific', 'Other']
+
+  - name: dim_date
+    description: "Calendar dimension covering the analytic horizon (var('start_date') .. var('end_date'))."
+    columns:
+      - name: date_sk
+        tests:
+          - not_null
+          - unique
+      - name: full_date
+        tests:
+          - not_null
+          - unique
+
+  - name: fact_sales
+    description: "One row per sale with conformed FKs to all four dimensions and net-of-returns measures."
+    columns:
+      - name: sale_sk
+        tests:
+          - not_null
+          - unique
+      - name: sale_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_sk
+      - name: product_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_sk
+      - name: store_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_store')
+              field: store_sk
+              config:
+                severity: warn
+      - name: date_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_sk
+      - name: gross_amount
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: fact_returns
+    description: "One row per return, joined to its originating sale and conformed dims."
+    columns:
+      - name: return_sk
+        tests:
+          - not_null
+          - unique
+      - name: return_id
+        tests:
+          - not_null
+          - unique
+      - name: sale_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_sales')
+              field: sale_id
+              config:
+                severity: warn
+      - name: refund_pct
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+              config:
+                severity: warn

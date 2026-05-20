@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: stg_sales
+    description: "Cleaned sales transactions. Materialised as a view."
+    columns:
+      - name: sale_id
+        description: "Primary key."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: channel
+        tests:
+          - accepted_values:
+              values: ['online', 'offline', 'mobile', 'in-store', 'wholesale', 'retail']
+              quote: true
+              config:
+                severity: warn
+      - name: quantity
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 1000
+      - name: total_amount
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_returns
+    columns:
+      - name: return_id
+        tests:
+          - not_null
+          - unique
+      - name: sale_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sales')
+              field: sale_id
+              config:
+                severity: warn
+
+  - name: stg_reviews
+    columns:
+      - name: review_id
+        tests:
+          - not_null
+          - unique
+      - name: rating
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 5
+
+  - name: stg_inventory
+    columns:
+      - name: inventory_id
+        tests:
+          - not_null
+          - unique
+      - name: available_stock
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_customers
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_products
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+      - name: price
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: gross_margin
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              config:
+                severity: warn
+
+  - name: stg_stores
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_suppliers
+    columns:
+      - name: supplier_id
+        tests:
+          - not_null
+          - unique
+      - name: quality_rating
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 5
