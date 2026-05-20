@@ -2,7 +2,7 @@ import json
 import sys
 import os
 import argparse
-from snowflake_config import SnowflakeConnection
+from monogram_etl.config.snowflake import SnowflakeConnection
 from dotenv import load_dotenv
 
 load_dotenv()

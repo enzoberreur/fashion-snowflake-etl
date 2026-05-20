@@ -1,0 +1,9 @@
+# Runtime dependencies — install with: pip install -e .
+# This file mirrors the [project].dependencies block in pyproject.toml
+# for environments that don't support PEP 621 (e.g. Airflow 2 base images).
+snowflake-connector-python>=3.6
+pandas>=2.1
+pyarrow>=14
+faker>=22
+cryptography>=42
+python-dotenv>=1.0
