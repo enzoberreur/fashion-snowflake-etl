@@ -1,0 +1,63 @@
+# Secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+
+# Generated data (large, regenerated via data_generator.py)
+data/*.json
+data/*.parquet
+data/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+*.egg
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Airflow
+airflow.db
+airflow.cfg
+logs/
+plugins/
+webserver_config.py
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# OS
+Thumbs.db
+desktop.ini
