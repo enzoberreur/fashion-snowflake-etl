@@ -1,6 +1,8 @@
-# 👑 Monogram Paris — ETL Pipeline
+# 👑 Monogram Paris - ETL Pipeline
 
-**Fashion Vintage Luxury** — Snowflake-backed ETL for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
+[![CI](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml/badge.svg)](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml)
+
+**Fashion Vintage Luxury** - Snowflake-backed ETL for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
 
 Two ingestion paths (real-time SQL + Parquet/COPY) feed a dbt-built star schema in Snowflake. Airflow orchestrates the full loop; dbt + dbt_expectations enforce data quality.
 
@@ -10,10 +12,10 @@ Two ingestion paths (real-time SQL + Parquet/COPY) feed a dbt-built star schema 
 
 ## 👥 Team
 
-* **Enzo Berreur** — Data Engineer
-* **Sara Ben Abdelkader** — Data Analyst / ETL
-* **Antonin Arroyo** — Back-end Developer
-* **Nehemie Bikuka Prince** — Data Engineer
+* **Enzo Berreur** - Data Engineer
+* **Sara Ben Abdelkader** - Data Analyst / ETL
+* **Antonin Arroyo** - Back-end Developer
+* **Nehemie Bikuka Prince** - Data Engineer
 
 ---
 
@@ -71,7 +73,7 @@ cd dbt && dbt deps && dbt build --target dev
 cd .. && monogram-check
 ```
 
-The Airflow DAGs in [`dags/`](dags/) automate steps 3–6 on a schedule.
+The Airflow DAGs in [`dags/`](dags/) automate steps 3-6 on a schedule.
 
 ---
 
@@ -99,7 +101,7 @@ monogram-stream-consume --batch-size 50   # -> Snowflake STREAM_SALES (exactly-o
 streamlit run dashboard/streamlit_app.py  # insights + live stream (localhost:8501)
 ```
 
-## ✅ Bloc 3 deliverables — coverage matrix
+## ✅ Bloc 3 deliverables - coverage matrix
 
 | Requirement | Where it lives |
 |-------------|----------------|
@@ -146,7 +148,7 @@ The dbt-side tests run as part of `dbt build` (or `dbt test`).
 
 All configuration is via `.env`. See [`.env.example`](.env.example) for the full list. The most important variables are `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_PRIVATE_KEY_PATH` (or `PRIVATE_KEY` raw PEM), and `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE`.
 
-dbt has its own [`dbt/profiles.yml.example`](dbt/profiles.yml.example) which references the same env vars — no separate Snowflake account needed.
+dbt has its own [`dbt/profiles.yml.example`](dbt/profiles.yml.example) which references the same env vars - no separate Snowflake account needed.
 
 ---
 
@@ -158,10 +160,10 @@ Credentials are managed through `.env` (gitignored). A past credential leak is d
 
 ## 📚 More documentation
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — full architecture with data-flow diagrams
-- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — ERD + star-schema rationale
-- [`docs/MONITORING.md`](docs/MONITORING.md) — what's monitored, alert thresholds, dashboards
-- [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) — retry / DLQ / recovery procedures
-- [`dbt/README.md`](dbt/README.md) — dbt project layout, layers, tests
-- [`dags/README.md`](dags/README.md) — Airflow DAG topology + deployment
-- [`SECURITY_NOTE.md`](SECURITY_NOTE.md) — credential-leak disclosure
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - full architecture with data-flow diagrams
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) - ERD + star-schema rationale
+- [`docs/MONITORING.md`](docs/MONITORING.md) - what's monitored, alert thresholds, dashboards
+- [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) - retry / DLQ / recovery procedures
+- [`dbt/README.md`](dbt/README.md) - dbt project layout, layers, tests
+- [`dags/README.md`](dags/README.md) - Airflow DAG topology + deployment
+- [`SECURITY_NOTE.md`](SECURITY_NOTE.md) - credential-leak disclosure
