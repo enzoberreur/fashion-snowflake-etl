@@ -1,100 +1,136 @@
-# 👑 Monogram Paris - ETL Pipeline
+# 👑 Monogram Paris — ETL Pipeline
 
-**Fashion Vintage Luxury** – ETL pipeline for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
+**Fashion Vintage Luxury** — Snowflake-backed ETL for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
+
+Two ingestion paths (real-time SQL + Parquet/COPY) feed a dbt-built star schema in Snowflake. Airflow orchestrates the full loop; dbt + dbt_expectations enforce data quality.
+
+> **Thesis context:** this repository is Bloc 3 (Pipelines de Données Temps Réel) of the data engineering thesis. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full deliverable map.
 
 ---
 
 ## 👥 Team
 
-* **Enzo Berreur** – Data Engineer
-* **Sara Ben Abdelkader** – Data Analyst / ETL
-* **Antonin Arroyo** – Back-end Developer
-* **Nehemie Bikuka Prince** – Data Engineer
+* **Enzo Berreur** — Data Engineer
+* **Sara Ben Abdelkader** — Data Analyst / ETL
+* **Antonin Arroyo** — Back-end Developer
+* **Nehemie Bikuka Prince** — Data Engineer
 
 ---
 
-## 🏛️ Architecture
+## 🏛️ Repository layout
 
-### 💎 Ingester Direct – Real-time Transactions
-
-* **Data processed**: Sales, Returns, Reviews, Inventory
-* **Purpose**: Immediate ingestion of transactions for near real-time tracking
-* **Execution command**:
-
-```bash
-python3 ingester_direct.py --all-transactional
 ```
-
-### 🏰 Ingester Snowpipe – Reference Data
-
-* **Data processed**: Products, Customers, Suppliers, Stores, Promotions
-* **Purpose**: Batch ingestion for updating reference data
-* **Execution command**:
-
-```bash
-python3 ingester_snowpipe.py --all-reference
-```
-
----
-
-## 🚀 Full Usage
-
-### 1️⃣ Generate data
-
-```bash
-python3 data_generator.py \
---sales 100000 \
---products 5000 \
---customers 10000 \
---stores 20 \
---promotions 100 \
---returns 5000 \
---reviews 15000 \
---inventory 10000
-```
-
-### 2️⃣ Ingest transactions
-
-```bash
-python3 ingester_direct.py --all-transactional --batch-size 10000
-```
-
-### 3️⃣ Ingest reference data
-
-```bash
-python3 ingester_snowpipe.py --all-reference --batch-size 2000
-```
-
-### 4️⃣ Verify data
-
-```bash
-python3 snowflake_check_data.py
+.
+├── dags/                      Airflow DAGs (orchestration)
+├── sql/
+│   ├── ddl/                   Raw-layer DDL (replayable, idempotent)
+│   └── validation/            Operational DQ assertions (freshness, FK, row counts)
+├── python/monogram_etl/       Python package (installed via pyproject.toml)
+│   ├── config/                SnowflakeConnection (single auth code path)
+│   ├── generators/            Faker-based test data generator
+│   ├── ingesters/             direct.py (SQL INSERT) + snowpipe.py (Parquet + COPY)
+│   ├── diagnostics/           data_quality.py + monitoring.py
+│   └── utils/                 logging, retry
+├── dbt/                       Transformation layer (staging → marts star schema)
+├── tests/                     pytest suite (unit / integration / data_quality)
+├── docs/                      Architecture, data model, monitoring, error handling
+├── data/                      Generated NDJSON (gitignored)
+├── .env.example               Credential template
+└── SECURITY_NOTE.md           Disclosure of a past credential exposure (account dead)
 ```
 
 ---
 
-## 📁 Project Structure
+## 🚀 Quick start
 
-| File                      | Description                                                             |
-| ------------------------- | ----------------------------------------------------------------------- |
-| `data_generator.py`       | Generates consistent data for sales, customers, products, and inventory |
-| `ingester_direct.py`      | Real-time ingestion of transactional data via SQL INSERT                |
-| `ingester_snowpipe.py`    | Batch ingestion of reference data using Parquet + COPY                  |
-| `snowflake_check_data.py` | Scripts for data validation and quality checks                          |
-| `snowflake_config.py`     | Snowflake configuration and connection settings                         |
+```bash
+# 1. Install
+python -m venv .venv && source .venv/bin/activate   # PowerShell: .venv\Scripts\Activate
+pip install -e .[dev,dbt,airflow,quality]
+
+# 2. Configure
+cp .env.example .env
+$EDITOR .env                                          # fill in Snowflake credentials
+
+# 3. Bootstrap Snowflake (one-off)
+snowsql -f sql/ddl/00_database_setup.sql
+snowsql -f sql/ddl/01_raw_transactional.sql
+snowsql -f sql/ddl/02_raw_reference.sql
+
+# 4. Generate test data + ingest
+monogram-generate \
+    --sales 100000 --products 5000 --customers 10000 \
+    --stores 20 --suppliers 10 --returns 5000 --reviews 15000 --inventory 10000
+monogram-ingest-direct    --all-transactional --batch-size 10000
+monogram-ingest-snowpipe  --all-reference     --batch-size 2000
+
+# 5. Transform + test in Snowflake
+cd dbt && dbt deps && dbt build --target dev
+
+# 6. Verify
+cd .. && monogram-check
+```
+
+The Airflow DAGs in [`dags/`](dags/) automate steps 3–6 on a schedule.
+
+---
+
+## 📐 Architecture (one-paragraph version)
+
+**Ingestion** has two paths: (1) the direct ingester batches JSON sales/returns/reviews/inventory rows into Snowflake via parameterised `INSERT`s, and (2) the snowpipe ingester writes Parquet files to a temporary stage and `COPY INTO`s reference data (products/customers/stores/suppliers/promotions). Both share one Snowflake connection class. **Orchestration** is Airflow: `monogram_etl_pipeline` runs every 4 hours (init DDL → generate → ingest in parallel → dbt → DQ check), with a separate daily DAG for slow-moving reference data. **Transformation** is dbt: 8 staging views, 4 conformed dimensions (`dim_customer`, `dim_product`, `dim_store`, `dim_date`), 2 facts (`fact_sales`, `fact_returns`), 1 SCD2 snapshot on customers. **Quality** comes from three layers: dbt schema tests (PK uniqueness, FK relationships, accepted values), `dbt_expectations` for numeric bounds, and `sql/validation/*.sql` for ops-side freshness + referential integrity. **Monitoring** is read out from Snowflake's `ACCOUNT_USAGE.COPY_HISTORY` and `QUERY_HISTORY` via the helpers in `diagnostics/monitoring.py`.
+
+Full picture in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Star schema in [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md).
+
+---
+
+## ✅ Bloc 3 deliverables — coverage matrix
+
+| Requirement | Where it lives |
+|-------------|----------------|
+| Real-time data management | `python/monogram_etl/ingesters/direct.py` |
+| ETL/ELT transformation | `dbt/models/` (staging → marts) |
+| Automation / orchestration | `dags/monogram_etl_dag.py` + `dags/monogram_reference_refresh_dag.py` |
+| Scheduling | `schedule="0 */4 * * *"` (4-hourly) + daily refresh DAG |
+| Monitoring | `python/monogram_etl/diagnostics/monitoring.py` + `sql/validation/*.sql` |
+| Data quality | `dbt/models/**/schema.yml` + `dbt/tests/` + `sql/validation/` |
+| Error handling | Airflow retries (exponential backoff) + `dags/callbacks.py` + `python/monogram_etl/utils/retry.py` |
+| Tests | `tests/{unit,integration,data_quality}/` |
+
+---
+
+## 🧪 Testing
+
+```bash
+pytest                 # full suite
+pytest -m unit         # quick checks, no external deps
+pytest -m integration  # mocks Snowflake, exercises the ingesters
+pytest -m data_quality # generator output sanity
+```
+
+The dbt-side tests run as part of `dbt build` (or `dbt test`).
 
 ---
 
 ## ⚙️ Configuration
 
-Create a `.env` file with your Snowflake credentials:
+All configuration is via `.env`. See [`.env.example`](.env.example) for the full list. The most important variables are `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_PRIVATE_KEY_PATH` (or `PRIVATE_KEY` raw PEM), and `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE`.
 
-```env
-SNOWFLAKE_ACCOUNT=your_account
-SNOWFLAKE_USER=your_user
-SNOWFLAKE_WAREHOUSE=INGEST
-SNOWFLAKE_DATABASE=INGEST
-SNOWFLAKE_SCHEMA=INGEST
-SNOWFLAKE_PRIVATE_KEY_PATH=/path/to/private_key.pem
-```
+dbt has its own [`dbt/profiles.yml.example`](dbt/profiles.yml.example) which references the same env vars — no separate Snowflake account needed.
 
+---
+
+## 🔐 Security
+
+Credentials are managed through `.env` (gitignored). A past credential leak is documented in [`SECURITY_NOTE.md`](SECURITY_NOTE.md). The exposed Snowflake trial account has been deactivated; the note is left in the repo as a learning artefact.
+
+---
+
+## 📚 More documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — full architecture with data-flow diagrams
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — ERD + star-schema rationale
+- [`docs/MONITORING.md`](docs/MONITORING.md) — what's monitored, alert thresholds, dashboards
+- [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) — retry / DLQ / recovery procedures
+- [`dbt/README.md`](dbt/README.md) — dbt project layout, layers, tests
+- [`dags/README.md`](dags/README.md) — Airflow DAG topology + deployment
+- [`SECURITY_NOTE.md`](SECURITY_NOTE.md) — credential-leak disclosure
