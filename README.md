@@ -83,6 +83,8 @@ The Airflow DAGs in [`dags/`](dags/) automate steps 3-6 on a schedule.
 
 Full picture in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Star schema in [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md).
 
+![Architecture](docs/architecture.png)
+
 ---
 
 ## ⚡ Real-time streaming (Kafka → Snowpipe Streaming)
