@@ -1,6 +1,6 @@
 # 👑 Monogram Paris - ETL Pipeline
 
-[![CI](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml/badge.svg)](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml)
+[![CI](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml/badge.svg)](https://github.com/enzoberreur/fashion-snowflake-etl/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/enzoberreur/fashion-snowflake-etl/branch/main/graph/badge.svg)](https://codecov.io/gh/enzoberreur/fashion-snowflake-etl)
 
 **Fashion Vintage Luxury** - Snowflake-backed ETL for authentication and sales of collectible fashion pieces (Chanel, Dior, Hermès, YSL).
 
