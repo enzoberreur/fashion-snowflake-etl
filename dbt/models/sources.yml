@@ -59,6 +59,33 @@ sources:
               - not_null
               - unique
 
+      # Real-time streaming ingester (loaded by streaming/consumer.py via Snowpipe Streaming)
+      - name: STREAM_SALES
+        description: "Real-time sales events streamed from Kafka via Snowpipe Streaming."
+        loaded_at_field: INGESTED_AT
+        freshness:
+          warn_after: { count: 10, period: minute }
+          error_after: { count: 30, period: minute }
+        tests:
+          # Exactly-once guarantee: each Kafka (partition, offset) lands at most once.
+          - dbt_utils.unique_combination_of_columns:
+              combination_of_columns: [KAFKA_PARTITION, KAFKA_OFFSET]
+        columns:
+          - name: EVENT_ID
+            description: "Unique event id (primary key)."
+            tests:
+              - not_null
+              - unique
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+          - name: PRODUCT_ID
+            tests:
+              - not_null
+          - name: TOTAL_AMOUNT
+            tests:
+              - not_null
+
       # Snowpipe ingester — reference / master data (loaded by ingesters/snowpipe.py)
       - name: PRODUCTS_DATA_SNOWPIPE
         description: "Master product catalog (vintage luxury items)."

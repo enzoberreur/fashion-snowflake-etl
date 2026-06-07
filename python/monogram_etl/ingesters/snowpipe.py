@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 import uuid
 import argparse
 import snowflake.connector
@@ -190,7 +191,8 @@ def save_to_snowflake_via_sql(snow, batch, temp_dir, table_name):
         cursor.execute(f"CREATE OR REPLACE TEMPORARY STAGE {stage_name}")
         
         # Upload du fichier vers le stage
-        put_command = f"PUT 'file://{out_path}' @{stage_name}"
+        put_path = out_path.replace("\\", "/")  # Snowflake PUT treats backslashes as escapes
+        put_command = f"PUT 'file://{put_path}' @{stage_name}"
         cursor.execute(put_command)
         logging.info(f"File uploaded to stage {stage_name}")
         
@@ -419,7 +421,8 @@ def save_to_snowflake_generic(snow, batch, temp_dir, table_name, columns):
         cursor.execute(f"CREATE OR REPLACE TEMPORARY STAGE {stage_name}")
         
         # Upload du fichier vers le stage
-        put_command = f"PUT 'file://{out_path}' @{stage_name}"
+        put_path = out_path.replace("\\", "/")  # Snowflake PUT treats backslashes as escapes
+        put_command = f"PUT 'file://{put_path}' @{stage_name}"
         cursor.execute(put_command)
         logging.info(f"File uploaded to stage {stage_name}")
         

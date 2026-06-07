@@ -4,8 +4,13 @@
 .env.*.local
 *.pem
 *.key
+*.p8
 *.p12
 *.pfx
+keys/
+profile.json
+profile-*.json
+certs/
 credentials.json
 service-account*.json
 

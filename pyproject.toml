@@ -43,6 +43,14 @@ dbt = [
 quality = [
     "great-expectations>=0.18",
 ]
+streaming = [
+    "confluent-kafka>=2.3",
+    "snowpipe-streaming>=0.5",
+]
+dashboard = [
+    "streamlit>=1.30",
+    "pandas>=2.1",
+]
 dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
@@ -55,6 +63,8 @@ dev = [
 monogram-generate = "monogram_etl.generators.data_generator:main"
 monogram-ingest-direct = "monogram_etl.ingesters.direct:main"
 monogram-ingest-snowpipe = "monogram_etl.ingesters.snowpipe:main"
+monogram-stream-produce = "monogram_etl.streaming.producer:main"
+monogram-stream-consume = "monogram_etl.streaming.consumer:main"
 monogram-check = "monogram_etl.diagnostics.data_quality:check_snowflake_tables"
 
 [tool.setuptools.packages.find]

@@ -127,3 +127,48 @@ models:
               max_value: 100
               config:
                 severity: warn
+
+  - name: fct_sales_realtime
+    description: "Real-time sales fact from the streamed events, conformed to the same dimensions. Carries streaming latency."
+    columns:
+      - name: event_sk
+        tests:
+          - not_null
+          - unique
+      - name: event_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_sk
+              config:
+                severity: warn
+      - name: product_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_sk
+              config:
+                severity: warn
+      - name: store_sk
+        tests:
+          - relationships:
+              to: ref('dim_store')
+              field: store_sk
+              config:
+                severity: warn
+      - name: gross_amount
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: latency_seconds
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              config:
+                severity: warn

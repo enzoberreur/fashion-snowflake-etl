@@ -83,18 +83,35 @@ Full picture in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Star schema in [
 
 ---
 
+## ⚡ Real-time streaming (Kafka → Snowpipe Streaming)
+
+Alongside the batch ELT, sales stream in real time: a producer publishes events to
+**Redpanda** (Kafka API), and a consumer ingests them into Snowflake with
+**Snowpipe Streaming** (high-performance Python SDK), one channel per partition,
+**exactly-once** via Kafka-offset tokens. dbt models the stream
+(`stg_stream_sales` → `fct_sales_realtime`) and a Streamlit dashboard shows live
+metrics. Full detail in [`docs/STREAMING.md`](docs/STREAMING.md).
+
+```bash
+docker compose up -d                      # Redpanda + Console (localhost:8088)
+monogram-stream-produce --rate 20         # publish sale events
+monogram-stream-consume --batch-size 50   # -> Snowflake STREAM_SALES (exactly-once)
+streamlit run dashboard/streamlit_app.py  # insights + live stream (localhost:8501)
+```
+
 ## ✅ Bloc 3 deliverables — coverage matrix
 
 | Requirement | Where it lives |
 |-------------|----------------|
-| Real-time data management | `python/monogram_etl/ingesters/direct.py` |
-| ETL/ELT transformation | `dbt/models/` (staging → marts) |
-| Automation / orchestration | `dags/monogram_etl_dag.py` + `dags/monogram_reference_refresh_dag.py` |
-| Scheduling | `schedule="0 */4 * * *"` (4-hourly) + daily refresh DAG |
-| Monitoring | `python/monogram_etl/diagnostics/monitoring.py` + `sql/validation/*.sql` |
-| Data quality | `dbt/models/**/schema.yml` + `dbt/tests/` + `sql/validation/` |
-| Error handling | Airflow retries (exponential backoff) + `dags/callbacks.py` + `python/monogram_etl/utils/retry.py` |
-| Tests | `tests/{unit,integration,data_quality}/` |
+| Real-time data streams | `python/monogram_etl/streaming/` (Kafka producer + consumer) → Snowpipe Streaming → `STREAM_SALES` ([`docs/STREAMING.md`](docs/STREAMING.md)) |
+| ETL/ELT transformation | `dbt/models/` (staging → marts star schema + `fct_sales_realtime`) |
+| Automation / orchestration | `dags/monogram_etl_dag.py`, `monogram_reference_refresh_dag.py`, `monogram_stream_monitor_dag.py` + GitHub Actions CI (`.github/workflows/ci.yml`) |
+| Scheduling | 4-hourly ETL · daily reference refresh · 5-minute stream monitor |
+| Monitoring & observability | stream-monitor DAG + `sql/validation/*.sql` + `diagnostics/monitoring.py` + Streamlit dashboard |
+| Data quality | dbt schema tests + `dbt_expectations` + singular tests + source freshness + exactly-once |
+| Error handling | Airflow retries (exp. backoff) + `dags/callbacks.py` + `utils/retry.py` + consumer offset-resume |
+| Tests | `tests/{streaming,integration,data_quality}/` + `dbt build` tests |
+| Insights | `dashboard/streamlit_app.py` (Streamlit on the MARTS star schema + live stream) |
 
 ---
 

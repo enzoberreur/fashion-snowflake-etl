@@ -112,3 +112,30 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
               max_value: 5
+
+  - name: stg_stream_sales
+    description: "Cleaned real-time sales events from Snowpipe Streaming. Materialised as a view."
+    columns:
+      - name: event_id
+        description: "Primary key."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: total_amount
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: latency_seconds
+        description: "End-to-end streaming latency (event time to land time), in seconds."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 3600
+              config:
+                severity: warn
