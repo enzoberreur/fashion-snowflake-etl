@@ -162,6 +162,8 @@ Credentials are managed through `.env` (gitignored). A past credential leak is d
 
 ## 📚 More documentation
 
+- [`docs/EVALUATION.md`](docs/EVALUATION.md) - grading-criteria coverage map (for the jury)
+- [`docs/DEFENSE.md`](docs/DEFENSE.md) - oral defense Q&A pack
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - full architecture with data-flow diagrams
 - [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) - ERD + star-schema rationale
 - [`docs/MONITORING.md`](docs/MONITORING.md) - what's monitored, alert thresholds, dashboards
