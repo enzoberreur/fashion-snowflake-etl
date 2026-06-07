@@ -1,0 +1,37 @@
+# Local real-time stack for the Monogram streaming layer.
+# Redpanda is a Kafka-API broker; Console is a web UI for topics/messages.
+# The producer and consumer run on the host venv against localhost:19092
+# (see README "Real-time streaming"); Snowflake is the streaming sink.
+name: monogram-streaming
+
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    container_name: monogram-redpanda
+    command:
+      - redpanda
+      - start
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+      - --mode=dev-container
+      - --smp=1
+      - --default-log-level=info
+    ports:
+      - "19092:19092"   # Kafka API (host)
+      - "9644:9644"     # Admin API
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  console:
+    image: redpandadata/console:v2.7.2
+    container_name: monogram-redpanda-console
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    ports:
+      - "8088:8080"     # Redpanda Console UI (8080 may be taken; mapped to 8088)

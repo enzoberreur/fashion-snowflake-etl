@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monogram-etl"
+version = "0.2.0"
+description = "Monogram Paris — luxury vintage fashion ETL pipeline targeting Snowflake."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Enzo Berreur" },
+    { name = "Sara Ben Abdelkader" },
+    { name = "Antonin Arroyo" },
+    { name = "Nehemie Bikuka Prince" },
+]
+keywords = ["etl", "snowflake", "airflow", "dbt", "data-engineering"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "snowflake-connector-python>=3.6",
+    "pandas>=2.1",
+    "pyarrow>=14",
+    "faker>=22",
+    "cryptography>=42",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+airflow = [
+    "apache-airflow>=2.7",
+    "apache-airflow-providers-snowflake>=5.0",
+]
+dbt = [
+    "dbt-core>=1.7",
+    "dbt-snowflake>=1.7",
+]
+quality = [
+    "great-expectations>=0.18",
+]
+streaming = [
+    "confluent-kafka>=2.3",
+    "snowpipe-streaming>=0.5",
+]
+dashboard = [
+    "streamlit>=1.30",
+    "pandas>=2.1",
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-mock>=3.12",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[project.scripts]
+monogram-generate = "monogram_etl.generators.data_generator:main"
+monogram-ingest-direct = "monogram_etl.ingesters.direct:main"
+monogram-ingest-snowpipe = "monogram_etl.ingesters.snowpipe:main"
+monogram-stream-produce = "monogram_etl.streaming.producer:main"
+monogram-stream-consume = "monogram_etl.streaming.consumer:main"
+monogram-check = "monogram_etl.diagnostics.data_quality:check_snowflake_tables"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["python"]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: unit tests with no external dependencies",
+    "integration: tests that require Snowflake or other external services",
+    "data_quality: dbt/Great Expectations data quality assertions",
+]

@@ -1,0 +1,30 @@
+name: 'monogram_paris'
+version: '0.1.0'
+config-version: 2
+
+profile: 'monogram_paris'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  monogram_paris:
+    staging:
+      +materialized: view
+      +schema: STAGING
+    marts:
+      +materialized: table
+      +schema: MARTS
+
+vars:
+  raw_schema: "INGEST"
+  start_date: "2020-01-01"
+  end_date:   "2030-12-31"
