@@ -113,6 +113,20 @@ streamlit run dashboard/streamlit_app.py  # insights + live stream (localhost:85
 | Tests | `tests/{streaming,integration,data_quality}/` + `dbt build` tests |
 | Insights | `dashboard/streamlit_app.py` (Streamlit on the MARTS star schema + live stream) |
 
+## 📸 Screenshots
+
+**Streamlit dashboard - business insights** (MARTS star schema: revenue by channel/country, monthly trend)
+
+![Business insights](docs/screenshots/dashboard_business.png)
+
+**Streamlit dashboard - real-time stream** (live, sub-second latency, FRESH, exactly-once)
+
+![Real-time stream](docs/screenshots/dashboard_realtime.png)
+
+**Redpanda Console** - the live `monogram.sales.stream` topic (3 partitions)
+
+![Redpanda Console](docs/screenshots/redpanda_console.png)
+
 ---
 
 ## 🧪 Testing
