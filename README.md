@@ -7,6 +7,8 @@
 Two ingestion paths (real-time SQL + Parquet/COPY) feed a dbt-built star schema in Snowflake. Airflow orchestrates the full loop; dbt + dbt_expectations enforce data quality.
 
 > **Thesis context:** this repository is Bloc 3 (Pipelines de Données Temps Réel) of the data engineering thesis. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full deliverable map.
+>
+> **One-command demo:** `bash demo.sh` runs the whole pipeline end to end (produce -> Redpanda -> Snowflake exactly-once -> dbt -> data-quality tests -> dashboard), pausing between stages for narration. Use `bash demo.sh --dry-run` for a Snowflake-free run.
 
 ---
 
