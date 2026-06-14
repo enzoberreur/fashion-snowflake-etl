@@ -53,7 +53,7 @@ class ReferencePools:
     stores: list[dict[str, Any]]
 
     @classmethod
-    def load(cls, data_dir: Path | str = "data") -> "ReferencePools":
+    def load(cls, data_dir: Path | str = "data") -> ReferencePools:
         data_dir = Path(data_dir)
         products = _load_ndjson(data_dir / "products.json")
         customers = _load_ndjson(data_dir / "customers.json")

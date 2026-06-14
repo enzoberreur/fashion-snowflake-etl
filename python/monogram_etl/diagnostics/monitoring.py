@@ -12,8 +12,8 @@ operational health rather than business correctness.
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from monogram_etl.config.snowflake import SnowflakeConnection
 from monogram_etl.utils.logging import get_logger

@@ -9,8 +9,8 @@ Airflow DAGs for the Monogram Paris ETL.
 
 Both DAGs share `callbacks.py`:
 
-- `on_failure(context)` — structured log + optional Slack webhook (`SLACK_WEBHOOK_URL`).
-- `on_success(context)` — final-task SLA log.
+- `on_failure(context)` - structured log + optional Slack webhook (`SLACK_WEBHOOK_URL`).
+- `on_success(context)` - final-task SLA log.
 
 ## Deployment
 
@@ -36,7 +36,7 @@ Connections required:
 | `SLACK_WEBHOOK_URL` (optional) | Failure notifications |
 | Airflow Variable `dbt_target` (default `dev`) | Which `profiles.yml` target dbt runs against |
 
-## Topology — `monogram_etl_pipeline`
+## Topology - `monogram_etl_pipeline`
 
 ```
 start

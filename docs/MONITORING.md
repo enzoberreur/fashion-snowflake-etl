@@ -52,7 +52,7 @@ The Slack webhook is opt-in. Without it, failures still surface via the Airflow 
 | dbt test pass rate | 100 % of `severity: error` tests | `dbt test` exit code |
 | Successful runs | ≥ 95 % over 7 days | Airflow + `QUERY_HISTORY` failed-query count |
 
-## 5. Dashboard ideas (not built — future work)
+## 5. Dashboard ideas (not built - future work)
 
 A small Streamlit / Superset on top of Snowflake would surface:
 
@@ -64,10 +64,10 @@ A small Streamlit / Superset on top of Snowflake would surface:
 
 `docs/DATA_MODEL.md` lists the analytical entities to query.
 
-## 6. Runbook — "data quality check failed"
+## 6. Runbook - "data quality check failed"
 
 1. Open the Airflow `data_quality_check` task log → identify which assertion failed.
-2. If **freshness**: check the relevant ingester task above it in the DAG. Common causes — Snowflake warehouse suspended (try `ALTER WAREHOUSE INGEST RESUME;`), key auth expired, source data missing.
+2. If **freshness**: check the relevant ingester task above it in the DAG. Common causes - Snowflake warehouse suspended (try `ALTER WAREHOUSE INGEST RESUME;`), key auth expired, source data missing.
 3. If **referential integrity**: probably an ingestion-order race. `sql/validation/assert_referential_integrity.sql` reports per-check counts; run `monogram-check` for samples.
 4. If **row-count bounds**: someone changed generator config without updating `assert_row_count_within_bounds.sql`. Update the expected band or re-run the generator with the documented settings.
 5. After fix: clear the failed DAG run (Airflow UI → Mark failed → Clear) so it retries from `data_quality_check`.

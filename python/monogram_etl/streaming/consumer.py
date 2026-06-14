@@ -66,7 +66,7 @@ def run(
         for tp in partitions:
             s = get_sink(tp.partition)
             token = s.latest_committed_offset() if s else None
-            if token not in (None, ""):
+            if token is not None and token != "":
                 tp.offset = int(token) + 1
         consumer.assign(partitions)
         logger.info("Assigned partitions (resume offsets): %s",
@@ -110,13 +110,17 @@ def run(
                 logger.warning("consumer error: %s", msg.error())
                 continue
 
-            event = json.loads(msg.value())
-            p, off = msg.partition(), msg.offset()
+            raw, p, off = msg.value(), msg.partition(), msg.offset()
+            # Non-error messages always carry a value, partition and offset.
+            assert raw is not None and p is not None and off is not None
+            event = json.loads(raw)
             row = event_to_row(event, partition=p, offset=off)
             if dry_run:
                 print(json.dumps(row, default=str))
             else:
-                get_sink(p).append(row, offset_token=off)
+                sink = get_sink(p)
+                assert sink is not None  # sinks are real whenever dry_run is False
+                sink.append(row, offset_token=off)
             last_offset[p] = off
             consumed += 1
             pending += 1

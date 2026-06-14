@@ -1,4 +1,4 @@
-# Security note — credential exposure incident
+# Security note - credential exposure incident
 
 ## What happened
 
@@ -8,7 +8,7 @@ In early commits of this repository, the file `.env` was tracked by git and cont
 - `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE`
 - A raw `PRIVATE_KEY` PEM block
 
-This file is visible in the git history (e.g., commit `3425ef0` and earlier).
+The private key file `keys/rsa_key.p8` was also tracked for a period.
 
 ## Why this is no longer a live risk
 
@@ -31,7 +31,11 @@ If this were a live account, the response would be:
 4. **Purge** `.env` from full git history with `git filter-repo` or BFG Repo-Cleaner, then force-push to all remotes.
 5. **Notify** any downstream consumers of the rotated credentials.
 
-Because the trial account is dead, steps 1–3 are moot. Step 4 (history purge) was deliberately skipped so this incident remains visible as a learning artifact for the thesis jury.
+Because the trial account is dead, steps 1-3 are moot.
+
+## History purge (completed 2026-06-10)
+
+Step 4 was carried out before publication: `git filter-repo` removed `.env` and `keys/rsa_key.p8` from the entire git history, and the repository was repacked. A mirror backup of the pre-purge history is kept offline. The next push to the GitHub remote must be a force-push (`git push --force origin main`) so the cleaned history replaces the old one. This note is kept so the incident and the full remediation remain visible as a learning artifact for the thesis jury.
 
 ## Lessons applied across the rest of this project
 

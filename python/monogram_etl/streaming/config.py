@@ -23,7 +23,7 @@ class KafkaSettings:
     group_id: str = DEFAULT_GROUP
 
     @classmethod
-    def from_env(cls) -> "KafkaSettings":
+    def from_env(cls) -> KafkaSettings:
         return cls(
             bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", DEFAULT_BOOTSTRAP),
             topic=os.getenv("KAFKA_SALES_TOPIC", DEFAULT_TOPIC),
@@ -42,7 +42,7 @@ class SnowpipeSettings:
     channel_prefix: str = "monogram"
 
     @classmethod
-    def from_env(cls) -> "SnowpipeSettings":
+    def from_env(cls) -> SnowpipeSettings:
         return cls(
             database=os.getenv("SNOWFLAKE_DATABASE", "INGEST"),
             schema=os.getenv("SNOWFLAKE_SCHEMA", "INGEST"),

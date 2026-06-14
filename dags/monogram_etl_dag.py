@@ -1,10 +1,10 @@
-"""Monogram Paris — full ETL pipeline.
+"""Monogram Paris - full ETL pipeline.
 
 Topology
 --------
 
     init_snowflake
-        ├──► generate_data (optional — only when data/ is empty)
+        ├──► generate_data (optional - only when data/ is empty)
         │       ├──► ingest_transactional (sales / returns / reviews / inventory)
         │       └──► ingest_reference     (products / customers / stores / suppliers / promotions)
         │
@@ -147,7 +147,7 @@ def data_quality_task() -> None:
 
 with DAG(
     dag_id="monogram_etl_pipeline",
-    description="Monogram Paris — generate → ingest → transform (dbt) → test → snapshot",
+    description="Monogram Paris - generate → ingest → transform (dbt) → test → snapshot",
     default_args=DEFAULT_ARGS,
     schedule="0 */4 * * *",  # every 4 hours
     start_date=datetime(2025, 1, 1),
@@ -210,7 +210,7 @@ with DAG(
     data_quality_check = PythonOperator(
         task_id="data_quality_check",
         python_callable=data_quality_task,
-        doc_md="Run sql/validation/*.sql — freshness, referential integrity, row-count bounds.",
+        doc_md="Run sql/validation/*.sql - freshness, referential integrity, row-count bounds.",
     )
 
     notify = EmptyOperator(

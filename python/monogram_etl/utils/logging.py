@@ -1,7 +1,7 @@
 """Centralised structured logging for the Monogram Paris ETL.
 
 Sets up a Python logger with a consistent format so Airflow / Docker logs are
-greppable. Idempotent — call ``configure_logging()`` from any entry point.
+greppable. Idempotent - call ``configure_logging()`` from any entry point.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def configure_logging(level: str | None = None) -> None:
     if _configured:
         return
 
-    log_level = (level or os.getenv("MONOGRAM_LOG_LEVEL", "INFO")).upper()
+    log_level = (level or os.getenv("MONOGRAM_LOG_LEVEL") or "INFO").upper()
 
     handler = logging.StreamHandler(stream=sys.stdout)
     handler.setFormatter(logging.Formatter(_LOG_FORMAT))

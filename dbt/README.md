@@ -1,4 +1,4 @@
-# dbt — Monogram Paris
+# dbt - Monogram Paris
 
 Transformation layer that turns the raw `INGEST.INGEST` tables into a star-schema in `INGEST.MARTS`.
 
@@ -8,9 +8,9 @@ Transformation layer that turns the raw `INGEST.INGEST` tables into a star-schem
 INGEST  (raw)      ──►  STAGING  (views, light cast + rename)  ──►  MARTS  (tables, conformed star schema)
 ```
 
-- **Sources** — `models/sources.yml` declares every raw table loaded by the Python ingesters.
-- **Staging** — `models/staging/stg_*.sql`, one view per raw table. Casts types, renames to `snake_case`, drops obviously bad rows (nulls in PK).
-- **Marts** — `models/marts/`. Conformed dimensions (`dim_customer`, `dim_product`, `dim_store`, `dim_date`) and facts (`fact_sales`, `fact_returns`).
+- **Sources** - `models/sources.yml` declares every raw table loaded by the Python ingesters.
+- **Staging** - `models/staging/stg_*.sql`, one view per raw table. Casts types, renames to `snake_case`, drops obviously bad rows (nulls in PK).
+- **Marts** - `models/marts/`. Conformed dimensions (`dim_customer`, `dim_product`, `dim_store`, `dim_date`) and facts (`fact_sales`, `fact_returns`).
 
 ## Star schema (high level)
 
@@ -54,4 +54,4 @@ Tests live in `models/**/schema.yml`. They cover:
 - **`relationships`** between facts and dimensions (referential integrity).
 - **`accepted_values`** on enum-like columns (`status`, `channel`, `discount_type`).
 - **`dbt_expectations.expect_column_values_to_be_between`** on numeric bounds (rating ∈ [1, 5], quantity > 0).
-- **Freshness** — sources declare `loaded_at_field: CREATED_AT` so `dbt source freshness` flags stale data.
+- **Freshness** - sources declare `loaded_at_field: CREATED_AT` so `dbt source freshness` flags stale data.

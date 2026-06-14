@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-
 from monogram_etl.streaming.events import EVENT_FIELDS, ReferencePools, SalesEventFactory
 
 pytestmark = pytest.mark.unit

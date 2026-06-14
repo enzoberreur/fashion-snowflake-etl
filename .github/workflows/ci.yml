@@ -22,12 +22,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Lint (ruff, non-blocking)
-        continue-on-error: true
+      - name: Lint (ruff)
         run: ruff check python tests
 
       - name: Unit + data-quality tests (with coverage)
-        run: pytest -m "unit or data_quality" --cov=python/monogram_etl --cov-report=term-missing --cov-report=xml
+        run: pytest -m "unit or data_quality" --cov=python/monogram_etl --cov-report=term-missing --cov-report=xml --cov-fail-under=25
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

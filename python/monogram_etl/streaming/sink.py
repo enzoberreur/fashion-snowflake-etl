@@ -124,7 +124,7 @@ class SnowpipeStreamingSink:
         """Block until the committed offset token reaches min_offset (exactly-once high-water mark)."""
 
         def committed(token: str | None) -> bool:
-            return token not in (None, "") and int(token) >= min_offset
+            return token is not None and token != "" and int(token) >= min_offset
 
         self._channel.wait_for_commit(committed, timeout_seconds=timeout_seconds)
 
@@ -136,7 +136,7 @@ class SnowpipeStreamingSink:
             if self._client is not None:
                 self._client.close()
 
-    def __enter__(self) -> "SnowpipeStreamingSink":
+    def __enter__(self) -> SnowpipeStreamingSink:
         self.open()
         return self
 

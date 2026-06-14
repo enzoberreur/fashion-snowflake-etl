@@ -1,4 +1,4 @@
-# Data model — star schema
+# Data model - star schema
 
 The `INGEST.MARTS` schema is a classic Kimball star: facts surrounded by conformed dimensions. Built by dbt from the raw `INGEST.INGEST.*` tables.
 
@@ -106,9 +106,9 @@ Each dimension is rebuilt full-refresh by `dbt run`. Slowly-changing history for
 | `fact_sales` | one row per sale event | `date_sk`, `customer_sk`, `product_sk`, `store_sk` | `quantity`, `gross_amount`, `refund_amount`, `net_amount` | `unit_price` (averaging only with weights) |
 | `fact_returns` | one row per return event | `date_sk`, `customer_sk`, `product_sk`, `store_sk`, `sale_sk` | `refund_amount` | `refund_pct`, `days_to_return` |
 
-`fact_sales.net_amount` = `gross_amount - refund_amount` (joined from `fact_returns`). This means returns get counted twice (once as a negative-impact in `fact_sales`, once explicitly in `fact_returns`) — analysts should pick one perspective per question.
+`fact_sales.net_amount` = `gross_amount - refund_amount` (joined from `fact_returns`). This means returns get counted twice (once as a negative-impact in `fact_sales`, once explicitly in `fact_returns`) - analysts should pick one perspective per question.
 
-## 4. SCD2 — customer history
+## 4. SCD2 - customer history
 
 `dbt/snapshots/customer_snapshot.sql` captures a Type-2 history of:
 
@@ -137,14 +137,14 @@ LEFT JOIN INGEST.MARTS.CUSTOMER_SNAPSHOT s
 - `_at` for timestamps, `_date` for dates.
 - Snake case in dbt; uppercase in raw Snowflake (Snowflake default).
 - Booleans get a verb prefix (`is_active`, `has_return`, `marketing_consent`).
-- Currency columns are `NUMBER(10,2)` — `gross_margin` is the dollar amount, `margin_pct` is the percentage.
+- Currency columns are `NUMBER(10,2)` - `gross_margin` is the dollar amount, `margin_pct` is the percentage.
 
 ## 6. Tests on the mart layer
 
 Every PK gets `not_null + unique`. Every FK gets `relationships(to=ref('dim_X'))`. Numeric bounds use `dbt_expectations.expect_column_values_to_be_between`. Custom singular tests (`dbt/tests/`) cover invariants that don't fit the column model:
 
-- `assert_fact_sales_amount_consistency` — `net_amount` must equal `gross_amount - refund_amount`, and none of them may be negative.
-- `assert_no_future_dated_sales` — `sale_date <= current_date()`.
+- `assert_fact_sales_amount_consistency` - `net_amount` must equal `gross_amount - refund_amount`, and none of them may be negative.
+- `assert_no_future_dated_sales` - `sale_date <= current_date()`.
 
 See `dbt/models/marts/schema.yml` for the full declaration.
 

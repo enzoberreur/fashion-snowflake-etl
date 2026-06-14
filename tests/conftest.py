@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from monogram_etl.generators.data_generator import DataGenerator, GenerationConfig
 
 

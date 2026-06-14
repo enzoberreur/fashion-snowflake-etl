@@ -4,7 +4,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from monogram_etl.generators.data_generator import DataGenerator, GenerationConfig
 
 pytestmark = pytest.mark.unit

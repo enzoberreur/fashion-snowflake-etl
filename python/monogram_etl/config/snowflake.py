@@ -13,9 +13,11 @@ in the snowpipe ingester and the diagnostics module.
 """
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
-from typing import Any, Iterable, Optional
+from collections.abc import Iterable
+from typing import Any
 
 import snowflake.connector
 from cryptography.hazmat.backends import default_backend
@@ -28,11 +30,11 @@ class SnowflakeConnection:
     def __init__(
         self,
         *,
-        role: Optional[str] = None,
-        warehouse: Optional[str] = None,
-        database: Optional[str] = None,
-        schema: Optional[str] = None,
-        query_tag: Optional[str] = None,
+        role: str | None = None,
+        warehouse: str | None = None,
+        database: str | None = None,
+        schema: str | None = None,
+        query_tag: str | None = None,
     ):
         self.connection: Any = None
         self.cursor: Any = None
@@ -45,8 +47,8 @@ class SnowflakeConnection:
 
     @staticmethod
     def load_private_key(
-        path: Optional[str] = None,
-        passphrase: Optional[str] = None,
+        path: str | None = None,
+        passphrase: str | None = None,
     ) -> bytes:
         """Resolve the Snowflake private key from env var first, then file path.
 
@@ -66,7 +68,7 @@ class SnowflakeConnection:
                     format=serialization.PrivateFormat.PKCS8,
                     encryption_algorithm=serialization.NoEncryption(),
                 )
-            except Exception as exc:  # noqa: BLE001 — surfaced as a warning
+            except Exception as exc:  # noqa: BLE001 - surfaced as a warning
                 logger.warning("PRIVATE_KEY env var present but unusable: %s", exc)
 
         if path and os.path.exists(path):
@@ -123,17 +125,13 @@ class SnowflakeConnection:
 
     def close(self) -> None:
         if self.cursor:
-            try:
+            with contextlib.suppress(Exception):
                 self.cursor.close()
-            except Exception:  # noqa: BLE001
-                pass
         if self.connection:
-            try:
+            with contextlib.suppress(Exception):
                 self.connection.close()
-            except Exception:  # noqa: BLE001
-                pass
 
-    def __enter__(self) -> "SnowflakeConnection":
+    def __enter__(self) -> SnowflakeConnection:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:

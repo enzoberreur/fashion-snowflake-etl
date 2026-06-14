@@ -1,7 +1,7 @@
 """Data-quality assertions on the output of the Faker generator.
 
 These exercise the same invariants that the dbt schema.yml tests enforce in
-Snowflake — but locally, on the NDJSON files, before anything is loaded.
+Snowflake - but locally, on the NDJSON files, before anything is loaded.
 """
 from __future__ import annotations
 
@@ -66,11 +66,10 @@ def test_reviews_rating_bounds(generated_dataset: dict[str, list[dict]]) -> None
 def test_returns_reference_existing_sales(generated_dataset: dict[str, list[dict]]) -> None:
     """Soft referential integrity: ranges overlap by construction, but verify."""
     sale_ids = {s["sale_id"] for s in generated_dataset["sales"]}
-    # The generator references sales by random ID inside a hardcoded range — not
+    # The generator references sales by random ID inside a hardcoded range - not
     # all references will be in the small test slice. We only assert that *some*
     # references do hit when both datasets are non-trivial.
     if len(sale_ids) >= 10 and generated_dataset["returns"]:
-        matched = sum(1 for ret in generated_dataset["returns"] if ret["sale_id"] in sale_ids)
         # not all need to match (the generator uses hardcoded ranges from an
         # earlier batch design); just sanity-check the field exists and is shaped right
         for ret in generated_dataset["returns"]:

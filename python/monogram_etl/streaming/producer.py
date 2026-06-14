@@ -62,6 +62,7 @@ def run(*, rate: float, count: int, settings: KafkaSettings, data_dir: str, dry_
         if dry_run:
             print(payload.decode("utf-8"))
         else:
+            assert producer is not None  # set above whenever dry_run is False
             producer.produce(settings.topic, key=event["store_id"].encode(), value=payload, callback=_delivery)
             producer.poll(0)
         sent += 1

@@ -1,7 +1,7 @@
 """Lightweight retry decorator with exponential backoff.
 
 Used to wrap network-fronted calls (Snowflake INSERT batches, COPY into stage).
-Deliberately tiny — for anything more elaborate, switch to ``tenacity``.
+Deliberately tiny - for anything more elaborate, switch to ``tenacity``.
 """
 from __future__ import annotations
 
@@ -9,7 +9,8 @@ import functools
 import logging
 import random
 import time
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from monogram_etl.streaming.sink import STREAM_COLUMNS, event_to_row, write_profile_json
 
 pytestmark = pytest.mark.unit
